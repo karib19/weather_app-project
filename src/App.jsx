@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 function App() {
   const API_KEY = '8587df0c29764fdeb93100406260804'
-  const BASE_URL = 'http://api.weatherapi.com/v1'
+  const BASE_URL = 'https://api.weatherapi.com/v1'
   const [weatherData, setWeatherData] = useState(null)
   const [forecastData, setForecastData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
