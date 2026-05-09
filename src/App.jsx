@@ -10,10 +10,33 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [searchHistory, setSearchHistory] = useState([])
+  const [suggestions, setSuggestions] = useState([])
+  const [query, setQuery] = useState('')
+
+
+  async function handleSuggestion(value) {
+  setQuery(value)
+
+  if (value.length < 1) {
+    setSuggestions([])
+    return
+  }
+
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/search.json?key=${API_KEY}&q=${value}`
+    )
+
+    setSuggestions(res.data)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 
   async function getWeather(e) {
     e.preventDefault()
-    const city = e.target.city.value.trim()
+    const city = query.trim()
     if (!city) return
 
     try {
@@ -35,7 +58,8 @@ function App() {
         return updated
       })
 
-      e.target.city.value = ''
+      setQuery('')
+      setSuggestions([])
       setIsLoading(false)
     } catch (error) {
       setError('City not found. Please try again.')
@@ -61,13 +85,34 @@ function App() {
         {/* Search Form */}
         <form onSubmit={getWeather} className='mb-8'>
           <div className='flex gap-2 justify-center flex-wrap'>
-            <input
-              name='city'
-              type="text"
-              placeholder="Search by city name..."
-              className='px-6 py-3 rounded-lg text-lg focus:outline-none focus:ring-4 focus:ring-yellow-300 min-w-64 shadow-lg'
-              autoComplete='off'
-            />
+            <div className='relative'>
+  <input
+    name='city'
+    type="text"
+    value={query}
+    onChange={(e) => handleSuggestion(e.target.value)}
+    placeholder="Search by city name..."
+    className='px-6 py-3 rounded-lg text-lg focus:outline-none focus:ring-4 focus:ring-yellow-300 min-w-64 shadow-lg text-black'
+    autoComplete='off'
+  />
+
+  {suggestions.length > 0 && (
+    <div className='absolute top-14 left-0 w-full bg-white rounded-lg shadow-lg z-50 overflow-hidden'>
+      {suggestions.map((city, idx) => (
+        <div
+          key={idx}
+          onClick={() => {
+            setQuery(city.name)
+            setSuggestions([])
+          }}
+          className='px-4 py-2 hover:bg-gray-200 cursor-pointer text-left text-black'
+        >
+          {city.name}, {city.country}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
             <button
               type='submit'
               className='bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-8 rounded-lg shadow-lg transition transform hover:scale-105'
